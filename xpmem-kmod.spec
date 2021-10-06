@@ -2,20 +2,23 @@
 #define buildforkernels current
 #define buildforkernels akmod
 
-%define kernel_release %(uname -r | sed -e 's/\.[^.]*$//g')
+%{!?kernel_release: %define kernel_release %(uname -r | sed -e 's/\.[^.]*$//g')}
+%{!?version: %define version 2.6.5}
 %global debug_package %{nil}
 
 Summary: XPMEM: Cross-partition memory
 Name: xpmem-kmod-%{kernel_release}
-Version: 2.6.5
+Version: %{version}
 Release: 0
 License: GPLv2
 Group: System Environment/Kernel
 Packager: Nathan Hjelm
 Source: xpmem-0.2.tar.bz2
-BuildRoot: %{_tmppath}/%{name}-0.2-build
+BuildRoot: %{_tmppath}/%{name}-%{version}-build
 Requires: kernel = %{kernel_release}
 Provides: xpmem-kmod
+
+BuildRequires: kernel-devel = %{kernel_release}
 
 %description
 XPMEM is a Linux kernel module that enables a process to map the
@@ -27,15 +30,12 @@ repository or by downloading a tarball from the link above.
 %setup -n xpmem-0.2
 
 %build
-./configure --prefix=/opt/xpmem
-pushd kernel ; make ; popd
+./configure --prefix=/opt/xpmem --with-kerneldir=/usr/src/kernels/%{kernel_release}.%{_arch}
+%{__make} -C kernel
 
 %install
-pushd kernel ; make DESTDIR=$RPM_BUILD_ROOT install ; popd
-mkdir -p $RPM_BUILD_ROOT/etc/udev/rules.d
-mkdir -p $RPM_BUILD_ROOT/lib/modules/$(uname -r)/kernel/extra
-cp 56-xpmem.rules $RPM_BUILD_ROOT/etc/udev/rules.d
-cp $RPM_BUILD_ROOT/opt/xpmem/lib/modules/$(uname -r)/xpmem.ko $RPM_BUILD_ROOT/lib/modules/$(uname -r)/kernel/extra
+%{__install} -D -m 0644 56-xpmem.rules %{buildroot}%{_sysconfdir}/udev/rules.d/56-xpmem.rules
+%{__install} -D -m 0644 kernel/xpmem.ko %{buildroot}/lib/modules/%{kernel_release}.%{_arch}/extra/xpmem.ko
 
 %post
 touch /etc/udev/rules.d/56-xpmem.rules
@@ -43,7 +43,6 @@ depmod -a
 
 %files
 %defattr(-, root, root)
-/opt
 /lib/modules
 
 %config(noreplace)
