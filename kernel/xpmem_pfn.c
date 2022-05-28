@@ -258,12 +258,15 @@ xpmem_pin_page(struct xpmem_thread_group *tg, struct task_struct *src_task,
 	}
 
 	/* get_user_pages()/get_user_pages_remote() faults and pins the page */
-#if   LINUX_VERSION_CODE >= KERNEL_VERSION(4, 10, 0)
-        ret = get_user_pages_remote (src_task, src_mm, vaddr, 1, FOLL_WRITE | FOLL_FORCE,
-                                     &page, NULL, NULL);
+#if   LINUX_VERSION_CODE >= KERNEL_VERSION(5, 9, 0)
+    ret = get_user_pages_remote (src_mm, vaddr, 1, FOLL_WRITE | FOLL_FORCE,
+                                 &page, NULL, NULL);
+#elif LINUX_VERSION_CODE >= KERNEL_VERSION(4, 10, 0)
+    ret = get_user_pages_remote (src_task, src_mm, vaddr, 1, FOLL_WRITE | FOLL_FORCE,
+                                 &page, NULL, NULL);
 #elif LINUX_VERSION_CODE >= KERNEL_VERSION(4, 9, 0)
-	ret = get_user_pages_remote (src_task, src_mm, vaddr, 1, FOLL_WRITE | FOLL_FORCE,
-				     &page, NULL);
+    ret = get_user_pages_remote (src_task, src_mm, vaddr, 1, FOLL_WRITE | FOLL_FORCE,
+                                 &page, NULL);
 #elif LINUX_VERSION_CODE >= KERNEL_VERSION(4, 8, 0)
 	ret = get_user_pages_remote (src_task, src_mm, vaddr, 1, 1, 1, &page, NULL);
 #else
@@ -552,8 +555,13 @@ xpmem_is_thread_group_stopped(struct xpmem_thread_group *tg)
 
 	rcu_read_lock();
 	do {
+#if   LINUX_VERSION_CODE >= KERNEL_VERSION(5, 14, 0)
 		if (!(task->flags & PF_EXITING) &&
-		    task->state != TASK_STOPPED) {
+		    task->__state != TASK_STOPPED) {
+#elif
+        if (!(task->flags & PF_EXITING) &&
+            task->state != TASK_STOPPED) {
+#endif
 			rcu_read_unlock();
 			return 0;
 		}
@@ -618,7 +626,11 @@ xpmem_unpin_procfs_show(struct seq_file *seq, void *offset)
 static int
 xpmem_unpin_procfs_open(struct inode *inode, struct file *file)
 {
-	return single_open(file, xpmem_unpin_procfs_show, PDE_DATA(inode));
+#if   LINUX_VERSION_CODE >= KERNEL_VERSION(5, 17, 0)
+    return single_open(file, xpmem_unpin_procfs_show, pde_data(inode));
+#elif
+    return single_open(file, xpmem_unpin_procfs_show, PDE_DATA(inode));
+#endif
 }
 
 #if LINUX_VERSION_CODE < KERNEL_VERSION(5,6,0)
