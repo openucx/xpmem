@@ -30,6 +30,15 @@ AC_DEFUN([AC_PATH_KERNEL_SOURCE_SEARCH],
         break
       fi;
     done
+    if test "$kerneldir" = /lib/modules/${vers}/build/ -a \
+      -r "$kerneldir/Makefile" -a \
+      `wc -l <"$kerneldir/Makefile"` -lt 100 -a \
+      -r "/lib/modules/${vers}/source/Makefile"
+    then
+      kerneldir_source="/lib/modules/${vers}/source"
+    else
+      kerneldir_source="$kerneldir"
+    fi
   fi
 
   if test x${no_kernel} = xyes; then
@@ -102,15 +111,18 @@ AC_DEFUN([AC_KERNEL_CHECKS],
                            -e s/sparc64.*/sparc/ \
                            -e s/s390x/s390/)
   save_CPPFLAGS="$CPPFLAGS"
-  CPPFLAGS="-include $kerneldir/include/linux/kconfig.h \
-            -include $kerneldir/include/linux/compiler.h \
+  CPPFLAGS="-include $kerneldir_source/include/linux/kconfig.h \
+            -include $kerneldir_source/include/linux/compiler.h \
             -D__KERNEL__ \
             -I$kerneldir/include \
-            -I$kerneldir/include/uapi \
-            -I$kerneldir/arch/$srcarch/include \
-            -I$kerneldir/arch/$srcarch/include/uapi \
+            -I$kerneldir_source/include \
+            -I$kerneldir_source/include/uapi \
+            -I$kerneldir_source/arch/$srcarch/include \
+            -I$kerneldir_source/arch/$srcarch/include/uapi \
             -I$kerneldir/arch/$srcarch/include/generated \
             -I$kerneldir/arch/$srcarch/include/generated/uapi \
+            -I$kerneldir_source/arch/$srcarch/include/generated \
+            -I$kerneldir_source/arch/$srcarch/include/generated/uapi \
             $CPPFLAGS"
 
   AC_CHECK_MEMBERS([struct task_struct.cpus_mask], [], [],
