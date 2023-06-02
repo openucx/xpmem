@@ -2,20 +2,25 @@
 #define buildforkernels current
 #define buildforkernels akmod
 
-%define kernel_release %(uname -r | sed -e 's/\.[^.]*$//g')
+%{!?kversion: %define kversion %(uname -r | sed -e 's/\.[^.]*$//g')}
+%{!?version: %define version 2.6.5}
 %global debug_package %{nil}
 
 Summary: XPMEM: Cross-partition memory
-Name: xpmem-kmod-%{kernel_release}
-Version: 2.6.5
+Name: xpmem-kmod-%{kversion}
+Version: %{version}
 Release: 0
 License: GPLv2
 Group: System Environment/Kernel
 Packager: Nathan Hjelm
 Source: xpmem-0.2.tar.bz2
-BuildRoot: %{_tmppath}/%{name}-0.2-build
-Requires: kernel = %{kernel_release}
+BuildRoot: %{_tmppath}/%{name}-%{version}-build
+Requires: kernel >= %{kversion}
+Requires(post): %{_sbindir}/weak-modules
+Requires(postun): %{_sbindir}/weak-modules
 Provides: xpmem-kmod
+
+BuildRequires: kernel-devel = %{kversion}
 
 %description
 XPMEM is a Linux kernel module that enables a process to map the
@@ -25,26 +30,28 @@ repository or by downloading a tarball from the link above.
 
 %prep
 %setup -n xpmem-0.2
+echo "override xpmem * weak-updates/xpmem" > kmod-xpmem.conf
 
 %build
-./configure --prefix=/opt/xpmem
-pushd kernel ; make ; popd
+./configure --prefix=/opt/xpmem --with-kerneldir=/usr/src/kernels/%{kversion}.%{_arch}
+%{__make} -C kernel
 
 %install
-pushd kernel ; make DESTDIR=$RPM_BUILD_ROOT install ; popd
-mkdir -p $RPM_BUILD_ROOT/etc/udev/rules.d
-mkdir -p $RPM_BUILD_ROOT/lib/modules/$(uname -r)/kernel/extra
-cp 56-xpmem.rules $RPM_BUILD_ROOT/etc/udev/rules.d
-cp $RPM_BUILD_ROOT/opt/xpmem/lib/modules/$(uname -r)/xpmem.ko $RPM_BUILD_ROOT/lib/modules/$(uname -r)/kernel/extra
+%{__install} -D -m 0644 56-xpmem.rules %{buildroot}%{_sysconfdir}/udev/rules.d/56-xpmem.rules
+%{__install} -D -m 0644 kmod-xpmem.conf %{buildroot}%{_sysconfdir}/depmod.d/kmod-xpmem.conf
+%{__install} -D -m 0644 kernel/xpmem.ko %{buildroot}/lib/modules/%{kversion}.%{_arch}/extra/xpmem.ko
 
 %post
-touch /etc/udev/rules.d/56-xpmem.rules
+echo /lib/modules/%{kversion}.%{_arch}/extra/xpmem.ko | %{_sbindir}/weak-modules --add-modules --no-initramfs
 depmod -a
+
+%postun
+echo /lib/modules/%{kversion}.%{_arch}/extra/xpmem.ko | %{_sbindir}/weak-modules --remove-modules
 
 %files
 %defattr(-, root, root)
-/opt
 /lib/modules
 
 %config(noreplace)
+/etc/depmod.d/kmod-xpmem.conf
 /etc/udev/rules.d/56-xpmem.rules
