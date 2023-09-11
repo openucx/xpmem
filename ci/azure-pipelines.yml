@@ -120,7 +120,7 @@ stages:
         strategy:
           matrix:
             ubuntu22-mainline:
-              BOX_NAME: ubuntu2204
+              BOX_NAME: ubuntu2210
               KERNEL: mainline
             ubuntu22:
               BOX_NAME: ubuntu2204
