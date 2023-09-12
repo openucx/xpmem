@@ -32,7 +32,11 @@ install_mainline_kernel() {
     add-apt-repository ppa:cappelikan/ppa    
     apt-get update &&
       DEBIAN_FRONTEND=noninteractive apt-get install -yq mainline
-    mainline install-latest
+    # Install 2 minor versions back from the latest available (X.Y-2.Z)
+    mainline check
+    latest_ver=$(mainline check | awk '/Latest update:/{print $3}')
+    install_ver=$(echo "$latest_ver" | awk -F. '{$2=($2>1?$2-2:0)}1' OFS='.')
+    mainline install "$install_ver"
     echo $?
 }
 
