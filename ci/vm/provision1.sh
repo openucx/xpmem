@@ -14,7 +14,20 @@ install_packages() {
         libtool &&
       apt-get clean && rm -rf /var/lib/apt/lists/*
   elif [[ $OS == *"centos"* ]]; then
+    # Update all repos to use vault.centos.org
+    for repo in /etc/yum.repos.d/*.repo; do
+      sed -i 's|^mirrorlist=|#mirrorlist=|g' "$repo"
+      sed -i 's|^#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g' "$repo"
+    done
+    # Update repo config to vault.centos.org
+    sed -i 's|^mirrorlist=|#mirrorlist=|g' /etc/yum.repos.d/CentOS-*.repo
+    sed -i 's|^#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g' /etc/yum.repos.d/CentOS-*.repo
+
+    # Install centos-release-scl and update its repo config
     yum install -y -q centos-release-scl
+    sed -i 's|^mirrorlist=|#mirrorlist=|g' /etc/yum.repos.d/CentOS-SCLo-scl-rh.repo /etc/yum.repos.d/CentOS-SCLo-scl.repo
+    sed -i 's|^#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g' /etc/yum.repos.d/CentOS-SCLo-scl-rh.repo /etc/yum.repos.d/CentOS-SCLo-scl.repo
+
     yum install -y -q \
       automake \
       devtoolset-8-gcc \
