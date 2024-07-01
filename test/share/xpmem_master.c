@@ -21,12 +21,12 @@
 		printf("==== %s PASSED ====\n\n", (name)) :	\
 		printf("==== %s FAILED ====\n\n", (name)))
 
-int test_base(test_args* t) { return 0; }
-int test_two_attach(test_args* t) { return 0; }
-int test_two_shares(test_args* t) { return 0; }
-int test_fork(test_args* t) { return 0; }
+int test_base(test_args* t) { (void)t; return 0; }
+int test_two_attach(test_args* t) { (void)t; return 0; }
+int test_two_shares(test_args* t) { (void)t; return 0; }
+int test_fork(test_args* t) { (void)t; return 0; }
 
-int main(int argc, char** argv)
+int main(void)
 {
 	pid_t p1, p2;
 	int i, fd, lock, status[2];

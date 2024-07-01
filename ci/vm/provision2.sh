@@ -4,6 +4,9 @@ set -Exeuo pipefail
 OS=$1
 PR_NUM=$2
 
+export CFLAGS="-Werror -Wall"
+export KFLAGS="-Werror"
+
 xpmem_build() {
   uname -r
   gcc --version

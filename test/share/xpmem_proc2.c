@@ -198,7 +198,7 @@ int test_fork(test_args *xpmem_args)
 	printf("xpmem_proc2: reading to pin pages\n");
 	for (i = 0; i < PAGE_INT_SIZE; i++) {
 		if (*(data + i) != PAGE_INT_SIZE + i) {
-			printf("xpmem_proc2: ***mismatch at %d: expected %lu "
+			printf("xpmem_proc2: ***mismatch at %d: expected %d "
 				"got %d\n", i, PAGE_INT_SIZE + i, *(data + i));
 			ret = -2;
 		}

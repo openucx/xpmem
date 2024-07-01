@@ -268,7 +268,7 @@ struct xpmem_partition {
  */
 #define XPMEM_MAX_PAGE_FAULT_AFTER 32
 #define XPMEM_MAX_PAGE_FAULT_BEFORE 16
-#define XPMEM_MAX_PAGE_FAULTS 128
+#define XPMEM_MAX_PAGE_FAULTS 96
 
 struct xpmem_config {
 	rwlock_t lock;

@@ -19,8 +19,8 @@ EXTRA_DIST = ${module_sources}
 
 module_DATA = $(MODULE)
 
-
-KCPPFLAGS = -include @abs_top_builddir@/config.h -I@abs_top_srcdir@/include
+KCPPFLAGS = -include @abs_top_builddir@/config.h -I@abs_top_srcdir@/include \
+	    $(KFLAGS)
 export KCPPFLAGS
 
 $(MODULE): ${module_sources}

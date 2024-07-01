@@ -101,7 +101,9 @@ AC_DEFUN([AC_KERNEL_CHECKS],
                            -e s/sparc32.*/sparc/ \
                            -e s/sparc64.*/sparc/ \
                            -e s/s390x/s390/)
+  save_CFLAGS="$CFLAGS"
   save_CPPFLAGS="$CPPFLAGS"
+  CFLAGS=
   CPPFLAGS="-include $kerneldir/include/linux/kconfig.h \
             -include $kerneldir/include/linux/compiler.h \
             -D__KERNEL__ \
@@ -148,6 +150,8 @@ AC_DEFUN([AC_KERNEL_CHECKS],
 
   AC_CHECK_DECLS([vm_flags_set], [], [], [[#include <linux/mm.h>]])
 
+  AC_SUBST(KFLAGS, [$KFLAGS])
   CPPFLAGS="$save_CPPFLAGS"
+  CFLAGS="$save_CFLAGS"
 ]
 )

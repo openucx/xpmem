@@ -6,9 +6,9 @@
 
 #define NR_TEST_PAGES 	4
 #define PAGE_SIZE	page_size()
-#define SHARE_SIZE	NR_TEST_PAGES * PAGE_SIZE
-#define PAGE_INT_SIZE	(PAGE_SIZE / sizeof(int))
-#define SHARE_INT_SIZE	(SHARE_SIZE / sizeof(int))
+#define SHARE_SIZE	(NR_TEST_PAGES * PAGE_SIZE)
+#define PAGE_INT_SIZE	((int)(PAGE_SIZE / sizeof(int)))
+#define SHARE_INT_SIZE	((int)(SHARE_SIZE / sizeof(int)))
 
 /* Used to specify size of /tmp/xpmem.share */
 #define TMP_SHARE_SIZE	32
@@ -46,7 +46,7 @@ xpmem_segid_t make_share(int **data, size_t size)
 		return -1;
 	}
 
-	for (i=0; i < (size / sizeof(int)); i++)
+	for (i=0; i < (int)(size / sizeof(int)); i++)
 		*(ptr + i) = i;
 
 	segid = xpmem_make(ptr, size, XPMEM_PERMIT_MODE, (void *)0666);
