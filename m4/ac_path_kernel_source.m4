@@ -42,13 +42,16 @@ AC_DEFUN([AC_PATH_KERNEL_SOURCE_SEARCH],
 ]
 )
 
-AC_DEFUN([AC_PATH_KERNEL_SOURCE],
+AC_DEFUN([AC_KERNEL_CHECKS],
 [
   AC_CHECK_PROG(ac_pkss_mktemp,mktemp,yes,no)
-  AC_PROVIDE([AC_PATH_KERNEL_SOURCE])
+  AC_PROVIDE([AC_KERNEL_CHECKS])
 
-  AC_ARG_ENABLE([kernel-module],[Enable building the kernel module (default: enabled)],[build_kernel_module=$enableval],
-		[build_kernel_module=1])
+  AC_ARG_ENABLE([kernel-module],
+    [AS_HELP_STRING([--disable-kernel-module],
+                    [Disable building the kernel module (default is enabled)],)],
+    [build_kernel_module=$enableval],
+    [build_kernel_module=1])
   AS_IF([test $build_kernel_module = 1],[
 
   AC_MSG_CHECKING([for Linux kernel sources])
@@ -88,12 +91,14 @@ AC_DEFUN([AC_PATH_KERNEL_SOURCE],
 
   AC_MSG_CHECKING([kernel release])
   AC_MSG_RESULT([${kernelvers}])
+
+  AC_KERNEL_CHECK_SUPPORT
   ])
   AM_CONDITIONAL([BUILD_KERNEL_MODULE], [test $build_kernel_module = 1])
 ]
 )
 
-AC_DEFUN([AC_KERNEL_CHECKS],
+AC_DEFUN([AC_KERNEL_CHECK_SUPPORT],
 [
   srcarch=$(uname -m | sed -e s/i.86/x86/ \
                            -e s/x86_64/x86/ \
