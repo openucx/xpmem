@@ -114,6 +114,16 @@ stages:
             displayName: Build on Ubuntu
             condition: contains(variables['build_container'], 'ubuntu')
 
+          - bash: |
+              set -eEx
+              make -i clean || true
+              tar --transform='s/^\./xpmem-dkms\//g' -czvf ../xpmem-dkms.tgz .
+              sudo dkms ldtarball ../xpmem-dkms.tgz
+              module=`dkms status | awk 'BEGIN { FS="," } /xpmem/ { print $1 }'`
+              sudo dkms build "$module"
+            displayName: DKMS module build on Ubuntu
+            condition: contains(variables['build_container'], 'ubuntu')
+
   - stage: VMs
     displayName: Build & Test on VMs
     dependsOn: Codestyle
