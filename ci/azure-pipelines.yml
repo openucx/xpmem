@@ -114,6 +114,28 @@ stages:
             displayName: Build on Ubuntu
             condition: contains(variables['build_container'], 'ubuntu')
 
+          - bash: |
+              set -eEx
+              ./autogen.sh
+              export CFLAGS='-Werror -Wall'
+              ./configure --disable-kernel-module
+              make -i distclean || true
+              ./configure --disable-kernel-module
+              make
+            displayName: Build on CentOS without kernel module
+            condition: contains(variables['build_container'], 'centos')
+
+          - bash: |
+              set -eEx
+              ./autogen.sh
+              export CFLAGS='-Werror -Wall'
+              ./configure --enable-gtest --disable-kernel-module
+              make -i distclean || true
+              ./configure --enable-gtest --disable-kernel-module
+              make
+            displayName: Build on Ubuntu without kernel module
+            condition: contains(variables['build_container'], 'ubuntu')
+
   - stage: VMs
     displayName: Build & Test on VMs
     dependsOn: Codestyle
