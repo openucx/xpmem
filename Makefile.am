@@ -14,10 +14,11 @@ sysconf_DATA = .version \
 	       56-xpmem.rules
 
 EXTRA_DIST = \
-        56-xpmem.rules \
-        $(pkgconfig_DATA) \
+	56-xpmem.rules \
+	$(pkgconfig_DATA) \
 	xpmem-lib.spec \
-	xpmem-kmod.spec
+	xpmem-kmod.spec \
+	dkms.conf
 
 .version:
 	echo "#%Module" > $@

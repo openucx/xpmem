@@ -134,6 +134,32 @@ stages:
             displayName: Build on Ubuntu without kernel module
             condition: contains(variables['build_container'], 'ubuntu')
 
+          - bash: |
+              set -eEx
+              # Workaround DKMS issue:
+              # - https://github.com/dell/dkms/commit/468025752343dbc8609704bf0915f52b9c5c50f2
+              sudo sed -i  -e 's@if \[\[ ! $temp_dir_name/dkms_main_tree \]\]@if \[\[ ! -d $temp_dir_name/dkms_main_tree \]\]@g' /usr/sbin/dkms || true
+
+              # dkms needs 'make mrproper' to work properly
+              sudo apt-get update
+              sudo apt-get install -y bison flex git
+
+              git clean -xdf
+              ./autogen.sh
+              kernel_ver=$(dpkg -l | grep 'linux-headers-.*-generic' | awk '{print $2}')
+              ./configure --with-kerneldir=/usr/src/${kernel_ver}
+              make dist
+
+              sudo dkms ldtarball ./xpmem-*.tar.gz
+              dkms status -m xpmem
+              version=$(dkms status -m xpmem | sed -n -e 's@xpmem[,/ ]\+\([^:,]\+\).*@\1@p')
+              kernel_ver=$(dpkg -l | grep 'linux-headers-.*-generic' | awk '{print $2; exit; }')
+              kernel_rel=$(echo "$kernel_ver" | sed -e 's@linux-headers-@@')
+              sudo dkms build "xpmem/$version" --kernelsourcedir=/usr/src/${kernel_ver} -k ${kernel_rel}
+              dkms status -m xpmem
+            displayName: DKMS module build on Ubuntu
+            condition: contains(variables['build_container'], 'ubuntu')
+
   - stage: VMs
     displayName: Build & Test on VMs
     dependsOn: Codestyle
