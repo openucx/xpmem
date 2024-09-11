@@ -2,7 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ([2.63])
-AC_INIT([xpmem], [2.7], [http://github.com/openucx/xpmem/issues])
+AC_INIT([xpmem], [2.7.3], [http://github.com/openucx/xpmem/issues])
 AM_INIT_AUTOMAKE([-Wall -Werror foreign subdir-objects])
 AC_CONFIG_SRCDIR([include/xpmem.h])
 AC_CONFIG_MACRO_DIR([m4])
