@@ -142,12 +142,11 @@ stages:
 
               # dkms needs 'make mrproper' to work properly
               sudo apt-get update
-              sudo apt-get install -y bison flex git
+              sudo DEBIAN_FRONTEND=noninteractive apt-get install -y bison flex git debhelper
 
               git clean -xdf
               ./autogen.sh
-              kernel_ver=$(dpkg -l | grep 'linux-headers-.*-generic' | awk '{print $2}')
-              ./configure --with-kerneldir=/usr/src/${kernel_ver}
+              ./configure --disable-kernel-module
               make dist
 
               sudo dkms ldtarball ./xpmem-*.tar.gz
@@ -157,6 +156,13 @@ stages:
               kernel_rel=$(echo "$kernel_ver" | sed -e 's@linux-headers-@@')
               sudo dkms build "xpmem/$version" --kernelsourcedir=/usr/src/${kernel_ver} -k ${kernel_rel}
               dkms status -m xpmem
+              sudo dkms mkdeb "xpmem/$version" --source-only
+              cp /var/lib/dkms/xpmem/$version/deb/xpmem-dkms_${version}_*.deb ./
+              sudo dkms remove "xpmem/$version" --all || true
+              sudo rm -rf /var/lib/dkms/xpmem/$version/deb/*
+              sudo rm -rf /usr/src/xpmem-*
+              sudo dpkg -i xpmem-dkms_${version}_*.deb
+
             displayName: DKMS module build on Ubuntu
             condition: contains(variables['build_container'], 'ubuntu')
 
