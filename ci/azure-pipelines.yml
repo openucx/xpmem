@@ -91,59 +91,46 @@ stages:
           - checkout: self
             clean: true
             fetchDepth: 100
-    
+
           - bash: |
-              set -eEx
-              ./autogen.sh
-              kernel_ver=$(rpm -qa | grep kernel-devel | cut -d'-' -f3-)
-              export CFLAGS='-Werror -Wall'
-              export KFLAGS='-Werror'
-              ./configure --with-kerneldir=/usr/src/kernels/${kernel_ver}
+              source ./ci/lib.sh
+              kernel_ver=$(centos_kernel_version)
+              clean_configure /usr/src/kernels/$kernel_ver
               make
             displayName: Build on CentOS
             condition: contains(variables['build_container'], 'centos')
 
           - bash: |
-              set -eEx
-              ./autogen.sh
-              kernel_ver=$(dpkg -l | grep 'linux-headers-.*-generic' | awk '{print $2}')
-              export CFLAGS='-Werror -Wall'
-              export KFLAGS='-Werror'
-              ./configure --enable-gtest --with-kerneldir=/usr/src/${kernel_ver}
+              source ./ci/lib.sh
+              kernel_ver=$(debian_kernel_version)
+              clean_configure /usr/src/$kernel_ver
               make
             displayName: Build on Ubuntu
             condition: contains(variables['build_container'], 'ubuntu')
 
           - bash: |
-              set -eEx
-              test -f Makefile && make -i distclean || true
-              ./autogen.sh
-              export CFLAGS='-Werror -Wall'
-              ./configure --disable-kernel-module
+              source ./ci/lib.sh
+              clean_userspace_configure
               make
             displayName: Build on CentOS without kernel module
             condition: contains(variables['build_container'], 'centos')
 
           - bash: |
-              set -eEx
-              test -f Makefile && make -i distclean || true
-              ./autogen.sh
-              export CFLAGS='-Werror -Wall'
-              ./configure --enable-gtest --disable-kernel-module
+              source ./ci/lib.sh
+              clean_userspace_configure --enable-gtest
               make
             displayName: Build on Ubuntu without kernel module
             condition: contains(variables['build_container'], 'ubuntu')
 
           - bash: |
-              set -eEx
-              git clean -xdf
-              ./autogen.sh
-              ./configure --disable-kernel-module
+              source ./ci/lib.sh
+              clean_userspace_configure
               make dist-gzip
+
               mkdir {BUILD,BUILDROOT,RPMS,SOURCES,SPECS,SRPMS}
               mv xpmem-*.tar.* ./SOURCES/
               rpm -qa | grep kernel-devel-
-              for kernel_ver in $(rpm -qa 'kernel-devel*' --qf "%{version}-%{release}.%{arch}\n"); do
+              for kernel_ver in $(centos_kernel_versions); do
                   rpmbuild --define "_topdir $PWD" --define "kernel_release $kernel_ver" -ba xpmem-kmod.spec
               done
 
@@ -151,25 +138,19 @@ stages:
               ls -alrt SRPMS/xpmem-kmod*.src.rpm
               rpm -qplvi RPMS/*/xpmem-kmod*.rpm
               rpm -qplvi SRPMS/xpmem-kmod*.src.rpm
-
-            displayName: KMOD package build on Centos
+            displayName: KMOD packaging on CentOS
             condition: contains(variables['build_container'], 'centos')
 
           - bash: |
-              set -eEx
-              # Workaround DKMS issue:
-              # - https://github.com/dell/dkms/commit/468025752343dbc8609704bf0915f52b9c5c50f2
-              sudo sed -i  -e 's@if \[\[ ! $temp_dir_name/dkms_main_tree \]\]@if \[\[ ! -d $temp_dir_name/dkms_main_tree \]\]@g' /usr/sbin/dkms || true
-
-              git clean -xdf
-              ./autogen.sh
-              ./configure --disable-kernel-module
+              source ./ci/lib.sh
+              dkms_workaround
+              clean_userspace_configure
               make dist-gzip
 
               sudo dkms ldtarball ./xpmem-*.tar.gz
               dkms status -m xpmem
-              version=$(dkms status -m xpmem | sed -n -e 's@xpmem[,/ ]\+\([^:,]\+\).*@\1@p')
-              kernel_ver=$(rpm -qa | grep kernel-devel | cut -d'-' -f3-)
+              version=$(dkms_xpmem_version)
+              kernel_ver=$(centos_kernel_version)
               sudo dkms build xpmem/${version} --kernelsourcedir=/usr/src/kernels/${kernel_ver} -k ${kernel_ver}
               # Workaround DKMS limitation
               sudo dkms build xpmem/${version} --kernelsourcedir=/usr/src/kernels/${kernel_ver} -k $(uname -r)
@@ -181,29 +162,19 @@ stages:
               sudo rm -rf /usr/src/xpmem-*
 
               sudo rpm -qplvi RPMS/noarch/xpmem-${version}-dkms.noarch.rpm
-
-            displayName: DKMS module build on Centos
+            displayName: DKMS packaging on CentOS
             condition: contains(variables['build_container'], 'centos')
 
           - bash: |
-              set -eEx
-              # Workaround DKMS issue:
-              # - https://github.com/dell/dkms/commit/468025752343dbc8609704bf0915f52b9c5c50f2
-              sudo sed -i  -e 's@if \[\[ ! $temp_dir_name/dkms_main_tree \]\]@if \[\[ ! -d $temp_dir_name/dkms_main_tree \]\]@g' /usr/sbin/dkms || true
-
-              # dkms needs 'make mrproper' to work properly
-              sudo apt-get update
-              sudo DEBIAN_FRONTEND=noninteractive apt-get install -y bison flex git debhelper
-
-              git clean -xdf
-              ./autogen.sh
-              ./configure --disable-kernel-module
-              make dist
+              source ./ci/lib.sh
+              dkms_workaround
+              clean_userspace_configure
+              make dist-gzip
 
               sudo dkms ldtarball ./xpmem-*.tar.gz
               dkms status -m xpmem
-              version=$(dkms status -m xpmem | sed -n -e 's@xpmem[,/ ]\+\([^:,]\+\).*@\1@p')
-              kernel_ver=$(dpkg -l | grep 'linux-headers-.*-generic' | awk '{print $2; exit; }')
+              version=$(dkms_xpmem_version)
+              kernel_ver=$(debian_kernel_version)
               kernel_rel=$(echo "$kernel_ver" | sed -e 's@linux-headers-@@')
               sudo dkms build "xpmem/$version" --kernelsourcedir=/usr/src/${kernel_ver} -k ${kernel_rel}
               dkms status -m xpmem
@@ -217,19 +188,14 @@ stages:
 
               sudo dpkg -i xpmem-dkms_${version}_*.deb
               sudo dpkg --contents xpmem-modules-*.deb
-
-            displayName: DKMS module build on Ubuntu
+            displayName: DKMS packaging on Ubuntu
             condition: contains(variables['build_container'], 'ubuntu')
 
           - bash: |
-              set -eEx
-              test -f Makefile && make -i distclean || true
-              sudo apt-get update
-              sudo apt-get install -y debhelper
-
-              ./autogen.sh
-              ./configure --disable-kernel-module
+              source ./ci/lib.sh
+              clean_userspace_configure
               make dist-gzip
+
               tarball="$(ls xpmem-*.tar.gz)"
               tar zxf "$tarball"
               cd "${tarball%.tar.gz}"
@@ -244,24 +210,21 @@ stages:
               echo -e '#include <xpmem.h>\n int main() { (void)xpmem_version(); return 0; }' | gcc -xc - -lxpmem -o dump
               ldd dump
               ./dump
-
-            displayName: Debian userspace packaging
+            displayName: DEB userspace packaging on Ubuntu
             condition: contains(variables['build_container'], 'ubuntu')
 
           - bash: |
-              set -eEx
-              test -f Makefile && make -i distclean || true
-              sudo apt-get update
-              sudo apt-get install -y rpm
-              mkdir {BUILD,BUILDROOT,RPMS,SOURCES,SPECS,SRPMS}
-              sed -i '/BuildRequires/d' xpmem.spec
-              ./autogen.sh
-              ./configure --disable-kernel-module
+              source ./ci/lib.sh
+              clean_userspace_configure
               make dist-gzip
+
+              sed -i '/BuildRequires/d' xpmem.spec
+
+              mkdir {BUILD,BUILDROOT,RPMS,SOURCES,SPECS,SRPMS}
               mv xpmem-*.tar.* ./SOURCES/
               rpmbuild --define "_topdir $PWD" -ba xpmem.spec
               find RPMS SRPMS
-            displayName: Build userspace RPMs on CentOS
+            displayName: RPM userspace packaging on Ubuntu
             condition: contains(variables['build_container'], 'ubuntu18')
 
   - stage: VMs
