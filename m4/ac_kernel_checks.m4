@@ -159,7 +159,7 @@ AC_DEFUN([AC_KERNEL_CHECK_SUPPORT],
                            -e s/s390x/s390/)
   save_CFLAGS="$CFLAGS"
   save_CPPFLAGS="$CPPFLAGS"
-  CFLAGS="$KERNEL_CHECKS_CFLAGS"
+  CFLAGS="${KERNEL_CHECKS_CFLAGS:--g -O2}"
   CPPFLAGS="-include $kernelinc/include/linux/kconfig.h \
             -include $kernelinc/include/linux/compiler.h \
             -D__KERNEL__ \
