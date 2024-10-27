@@ -36,6 +36,15 @@ install_packages() {
       libtool \
       make &&
       sudo yum clean all
+
+  elif [[ $OS == *"rhel"* ]]; then
+    # Copy the repo file
+    sudo cp /vagrant/rhel-web.repo /etc/yum.repos.d/
+    # Set yum OS version
+    sudo bash -c '. /etc/os-release && echo "${VERSION_ID}" > /etc/yum/vars/os_version'
+
+    sudo yum install -y git
+    sudo yum clean all
   fi
 }
 
@@ -47,7 +56,6 @@ install_mainline_kernel() {
     mainline install 6.3.13
     echo $?
 }
-
 
 err_report() {
   echo "Exited with ERROR in line $1"
