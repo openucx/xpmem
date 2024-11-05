@@ -1,0 +1,13 @@
+# Nvidia Labs PXE Repository Mirrors for RHEL
+
+[NVDA-mirror-BaseOS]
+name=RH$os_version - BaseOS - x86_64 - NVDA Labs PXE Mirror
+baseurl=http://webrepo.rdmz.labs.mlnx/RH/$os_version/x86_64/BaseOS/
+enabled=1
+gpgcheck=0
+
+[NVDA-mirror-AppStream]
+name=RH$os_version - AppStream - x86_64 - NVDA Labs PXE Mirror
+baseurl=http://webrepo.rdmz.labs.mlnx/RH/$os_version/x86_64/AppStream/
+enabled=1
+gpgcheck=0

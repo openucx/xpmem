@@ -15,17 +15,18 @@ xpmem_build() {
   git fetch origin pull/"$PR_NUM"/merge
   git checkout FETCH_HEAD
   ./autogen.sh
-  if [[ $OS == *"ubuntu"* ]]; then
-    ./configure --enable-gtest --with-kerneldir=/usr/src/linux-headers-"$(uname -r)"
-    make -s
-    make check
-  elif [[ $OS == *"centos"* ]]; then
+  if [[ $OS == *"centos"* ]]; then
     # Build with GCC-8
     scl enable devtoolset-8 -- bash -c "
       ./configure --enable-gtest --with-kerneldir=/usr/src/kernels/'$(uname -r)'
       make -s
       make check
     "
+  else
+    # Ubuntu and RHEL
+    ./configure --enable-gtest --with-kerneldir=/usr/src/kernels/"$(uname -r)"
+    make -s
+    make check
   fi
 }
 

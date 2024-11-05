@@ -252,6 +252,8 @@ stages:
               BOX_NAME: ubuntu2004
             centos7:
               BOX_NAME: centos7
+            rhel9:
+              BOX_NAME: rhel9
 
         steps:
           - checkout: self
