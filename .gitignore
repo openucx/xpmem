@@ -45,7 +45,8 @@ kernel/xpmem.mod.c
 kernel/xpmem.mod
 kernel/modules.order
 kernel/Module.symvers
-kernel/Kbuild
+kernel/test_mods/
+kernel/xpmem_kernel.h
 .tmp_versions
 test-driver
 dkms.conf

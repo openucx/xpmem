@@ -79,7 +79,6 @@ AC_CONFIG_FILES([Makefile
                  xpmem.spec
                  module
                  include/Makefile
-                 kernel/Kbuild
                  kernel/Makefile
                  kernel/xpmem
                  lib/Makefile
