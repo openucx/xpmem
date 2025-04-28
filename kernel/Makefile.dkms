@@ -1,0 +1,20 @@
+KVERS = $(shell uname -r)
+KSRC = /lib/modules/$(KVERS)/build
+KMAKE = make -C $(KSRC) M=$(shell pwd) # $(PWD) may point to main dir
+
+all:
+	$(KMAKE) modules
+
+clean:
+	$(KMAKE) clean
+
+.PHONY: all clean
+
+obj-m		:= xpmem.o
+xpmem-objs	:= xpmem_main.o xpmem_make.o xpmem_get.o \
+		   xpmem_attach.o xpmem_pfn.o xpmem_misc.o \
+		   xpmem_mmu_notifier.o
+
+ccflags-y =	-DKERNEL_3_8 \
+	       -include $(obj)/xpmem_kernel.h \
+               -I$(obj)/../include

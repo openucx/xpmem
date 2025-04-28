@@ -368,7 +368,7 @@ static inline struct xpmem_thread_group *__xpmem_tg_ref_by_tgid_nolock(pid_t tgi
 #define xpmem_mmap_read_trylock(_mm)	mmap_read_trylock(_mm)
 #endif
 
-#if (!HAVE_DECL_VMA_ITER_INIT)
+#ifndef HAVE_DECL_VMA_ITER_INIT
 struct vma_iterator {
 	struct mm_struct *mm;
 	unsigned long start;
@@ -384,7 +384,7 @@ struct vma_iterator {
 	     (_vma) = (_vma)->vm_next)
 #endif
 
-#if (!HAVE_DECL_VM_FLAGS_SET)
+#ifndef HAVE_DECL_VM_FLAGS_SET
 static inline void vm_flags_set(struct vm_area_struct *vma, vm_flags_t flags)
 {
 	vma->vm_flags |= flags;

@@ -1,0 +1,4 @@
+#ifndef pmd_leaf
+#error "pmd_leaf macro not defined"
+#endif
+
