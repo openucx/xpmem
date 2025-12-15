@@ -12,11 +12,11 @@ BUILT_MODULE_NAME[0]="xpmem"
 BUILT_MODULE_LOCATION[0]="kernel"
 # where we put it under the kernel modules directory
 DEST_MODULE_LOCATION[0]="/kernel/../updates/"
-# how to build it
-MAKE[0]="sh ./configure --with-kerneldir=$kernel_source_dir --with-kernelvers=$kernelver ; make"
+# how to build it (only build kernel module for DKMS)
+MAKE[0]="sh ./configure --with-kerneldir=$kernel_source_dir --with-kernelvers=$kernelver ; make -C kernel"
 
-# clean up command
-CLEAN="make distclean"
+# clean up command (only clean kernel module for DKMS)
+CLEAN="make -C kernel clean || true"
 
 # rebuild and autoinstall automatically when dkms_autoinstaller runs
 # for a new kernel
