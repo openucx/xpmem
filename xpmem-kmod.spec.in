@@ -40,13 +40,12 @@ make
 export INSTALL_MOD_PATH=$RPM_BUILD_ROOT
 export INSTALL_MOD_DIR=extra/%{module}
 make -C kernel modules_install
-mkdir -p $RPM_BUILD_ROOT/etc/udev/rules.d
-cp 56-xpmem.rules $RPM_BUILD_ROOT/etc/udev/rules.d
+mkdir -p $RPM_BUILD_ROOT/lib/udev/rules.d
+cp 56-xpmem.rules $RPM_BUILD_ROOT/lib/udev/rules.d
 find $RPM_BUILD_ROOT -name 'xpmem.*' | sed -e s@^$RPM_BUILD_ROOT@@ >filelist
 
 %files -f filelist
-/etc/udev/rules.d/56-xpmem.rules
+/lib/udev/rules.d/56-xpmem.rules
 
 %post
-touch /etc/udev/rules.d/56-xpmem.rules
 depmod -a
