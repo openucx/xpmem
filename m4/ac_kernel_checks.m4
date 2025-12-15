@@ -28,8 +28,11 @@ AC_DEFUN([AC_PATH_KERNEL_SOURCE_SEARCH],
     if test -z "$kerneldir" && test -e "$dir"/Module.symvers ; then
       kerneldir="$dir"/
     fi
-    if test -z "$kernelinc" && test -e "$dir"/include/linux/mm.h; then
+    if test -z "$kernelinc" && test -e "$dir"/include/generated/autoconf.h; then
       kernelinc="$dir"/
+    fi
+    if test -z "$kernelsrc" && test -e "$dir"/include/linux/mm.h; then
+      kernelsrc="$dir"/
     fi
   done
 
@@ -38,6 +41,9 @@ AC_DEFUN([AC_PATH_KERNEL_SOURCE_SEARCH],
   fi
   if test -z "$kernelinc"; then
       AC_MSG_ERROR([could not find kernel includes to use for configuration])
+  fi
+  if test -z "$kernelsrc"; then
+    kernelsrc="$kernelinc"
   fi
 ]
 )
@@ -85,6 +91,9 @@ AC_DEFUN([AC_KERNEL_CHECKS],
 
   AC_MSG_CHECKING([for kernel checks include path])
   AC_MSG_RESULT([${kernelinc}])
+
+  AC_MSG_CHECKING([for kernel checks source path])
+  AC_MSG_RESULT([${kernelsrc}])
 
   AC_MSG_CHECKING([kernel release])
   AC_MSG_RESULT([${kernelvers}])
@@ -160,14 +169,16 @@ AC_DEFUN([AC_KERNEL_CHECK_SUPPORT],
   save_CFLAGS="$CFLAGS"
   save_CPPFLAGS="$CPPFLAGS"
   CFLAGS="${KERNEL_CHECKS_CFLAGS:--g -O2}"
-  CPPFLAGS="-include $kernelinc/include/linux/kconfig.h \
-            -include $kernelinc/include/linux/compiler.h \
+  CPPFLAGS="-include $kernelsrc/include/linux/kconfig.h \
+            -include $kernelsrc/include/linux/compiler.h \
             -D__KERNEL__ \
             -DKBUILD_MODNAME=\"xpmem_configure\" \
             -I$kernelinc/include \
-            -I$kernelinc/include/uapi \
+            -I$kernelsrc/include \
+            -I$kernelsrc/include/uapi \
             -I$kernelinc/arch/$srcarch/include \
-            -I$kernelinc/arch/$srcarch/include/uapi \
+            -I$kernelsrc/arch/$srcarch/include \
+            -I$kernelsrc/arch/$srcarch/include/uapi \
             -I$kernelinc/arch/$srcarch/include/generated \
             -I$kernelinc/arch/$srcarch/include/generated/uapi \
             $CPPFLAGS"
