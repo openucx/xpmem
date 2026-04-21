@@ -6,6 +6,10 @@ KERNEL=$2
 
 install_packages() {
   if [[ $OS == *"ubuntu"* ]]; then
+    if [[ $OS == *"ubuntu23"* ]]; then
+      sudo sed -i 's|https://mirrors.edge.kernel.org/ubuntu|https://old-releases.ubuntu.com/ubuntu|g' /etc/apt/sources.list
+    fi
+
     apt-get update &&
       DEBIAN_FRONTEND=noninteractive apt-get install -yq \
         automake \
