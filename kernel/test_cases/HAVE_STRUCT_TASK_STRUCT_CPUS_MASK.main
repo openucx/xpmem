@@ -1,0 +1,3 @@
+/* Check  if struct task_struct has member cpu_mask */
+struct task_struct task_struct = {};
+return sizeof(task_struct.cpus_mask);
