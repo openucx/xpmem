@@ -10,8 +10,8 @@ endif
 
 pkgconfig_DATA = cray-xpmem.pc
 
-sysconf_DATA = .version \
-	       56-xpmem.rules
+udevrules_DATA = 56-xpmem.rules
+udevrulesdir = /lib/udev/rules.d
 
 EXTRA_DIST = \
 	56-xpmem.rules \
