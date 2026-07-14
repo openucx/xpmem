@@ -6,6 +6,9 @@ init_SCRIPTS = xpmem
 MODULE=xpmem.ko
 
 module_sources = \
+    config_kernel \
+    Kbuild \
+    test_cases \
     xpmem_attach.c \
     xpmem_get.c \
     xpmem_main.c \
