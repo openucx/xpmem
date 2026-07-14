@@ -102,8 +102,8 @@ AC_DEFUN([AC_KERNEL_CHECK_SUPPORT],
   if test "$silent" = "yes"; then
     __xpmem_silent_opt="-q"
   fi
-  # FIXME: what about out-of-tree build?
-  env KSRC=$kerneldir XPMEM_VERSION="$PACKAGE_VERSION" kernel/config_kernel $__xpmem_silent_opt
+  env KSRC="$kerneldir" XPMEM_VERSION="$PACKAGE_VERSION" \
+    ${srcdir}/kernel/config_kernel -o `realpath kernel` $__xpmem_silent_opt
   if test $? -ne 0; then
     AC_MSG_ERROR([Failed to configure kernel. Missing kernel headers (-devel) or broken build system])
   fi
