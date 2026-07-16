@@ -6,6 +6,9 @@ init_SCRIPTS = xpmem
 MODULE=xpmem.ko
 
 module_sources = \
+    config_kernel \
+    Kbuild \
+    test_cases \
     xpmem_attach.c \
     xpmem_get.c \
     xpmem_main.c \
@@ -19,10 +22,6 @@ EXTRA_DIST = ${module_sources}
 
 module_DATA = $(MODULE)
 
-KCPPFLAGS = -include @abs_top_builddir@/config.h -I@abs_top_srcdir@/include \
-	    $(KFLAGS)
-export KCPPFLAGS
-
 $(MODULE): ${module_sources}
 	$(MAKE) -C $(KERNEL_PATH) M=$(abs_builddir)
 
@@ -31,5 +30,6 @@ modules_install: $(MODULE)
 
 clean-local:
 	$(MAKE) -C $(KERNEL_PATH) M=$(abs_builddir) clean
+	rm -rf test_mods xpmem_kernel.h
 
 .PHONY: $(MODULE)

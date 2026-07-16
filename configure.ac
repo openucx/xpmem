@@ -79,7 +79,6 @@ AC_CONFIG_FILES([Makefile
                  xpmem.spec
                  module
                  include/Makefile
-                 kernel/Kbuild
                  kernel/Makefile
                  kernel/xpmem
                  lib/Makefile
@@ -96,5 +95,8 @@ AC_CONFIG_LINKS([kernel/xpmem_attach.c:kernel/xpmem_attach.c
                  kernel/xpmem_mmu_notifier.c:kernel/xpmem_mmu_notifier.c
                  kernel/xpmem_pfn.c:kernel/xpmem_pfn.c
                  kernel/xpmem_private.h:kernel/xpmem_private.h
+                 kernel/Kbuild:kernel/Kbuild
+                 include/xpmem.h:include/xpmem.h
+                 include/xpmem_internal.h:include/xpmem_internal.h
                  test/share/run.sh:test/share/run.sh])
 AC_OUTPUT

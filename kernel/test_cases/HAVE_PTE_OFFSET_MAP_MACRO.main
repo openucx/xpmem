@@ -1,0 +1,4 @@
+#ifndef pte_offset_map
+#error "pte_offset_map macro not defined"
+#endif
+

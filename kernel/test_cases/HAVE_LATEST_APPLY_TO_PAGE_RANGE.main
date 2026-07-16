@@ -1,0 +1,1 @@
+int a = callback(NULL, 1, NULL);

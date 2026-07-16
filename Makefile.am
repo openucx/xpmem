@@ -27,3 +27,5 @@ EXTRA_DIST = \
 	echo "set ModulesVersion \"@MODULE_VERSION@\"" >> $@
 
 dist: dist-bzip2
+
+CLEANFILES = .version xpmem-*.tar.bz2
